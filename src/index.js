@@ -1,21 +1,21 @@
 import "phaser";
 
 var config = {
-  type: Phaser.AUTO,
-  parent: "phaser-example",
-  width: 800,
-  height: 600,
-  physics: {
-    default: 'arcade',
-    arcade: {
-      gravity: { y: 0 }
+    type: Phaser.AUTO,
+    parent: "phaser-example",
+    width: 800,
+    height: 600,
+    physics: {
+      default: 'arcade',
+      arcade: {
+        gravity: { y: 0 }
+      }
+    },
+    scene: {
+      preload: preload,
+      create: create,
+      update: update
     }
-  },
-  scene: {
-    preload: preload,
-    create: create,
-    update: update
-  }
 };
 
 var game = new Phaser.Game(config);
@@ -29,7 +29,7 @@ function preload() {
   this.load.image("tiles", "../assets/assets.png");
   this.load.tilemapTiledJSON("map", "../assets/level1.json");
   this.load.image("background", "../assets/water.png");
-  this.load.spritesheet('player', "../assets/player.png", { frameWidth: 32, frameHeight: 64 })
+  this.load.spritesheet("player", "../assets/player.png", { frameWidth: 32, frameHeight: 64 })
 }
 
 function create() {
@@ -49,11 +49,11 @@ function create() {
   worldLayer.setCollisionByProperty({ collides: true });
   highLayer.setDepth(10);
 
-  player = this.physics.add.sprite(100, 450, 'player');
+  player = this.physics.add.sprite(100, 450, "player")
   this.physics.add.collider(player, lowerLayer)
-  this.physics.add.collider(player, belowLayer)
+  this.physics.add.collider(player, groundLayer)
   this.physics.add.collider(player, worldLayer)
-
+  
   const anims = this.anims;
   anims.create({
     key: "left",
@@ -80,9 +80,12 @@ function create() {
     repeat: -1
   });
 
+  //Camera
   const camera = this.cameras.main
   camera.startFollow(player)
   camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
+
+
 }
 
 
@@ -112,7 +115,7 @@ function update() {
   } else if (cursors.down.isDown) {
     player.anims.play("front", true);
   } else {
-    player.anims.stop();
+    player.anims.stop()
 
     if (prevVelocity.x < 0) player.setTexture('player', 'left')
       else if (prevVelocity.x > 0) player.setTexture('player', 'right')
