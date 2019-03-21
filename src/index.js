@@ -1,4 +1,5 @@
 import "phaser";
+import Enemies from "./Enemies";
 
 var config = {
     type: Phaser.AUTO,
@@ -21,6 +22,7 @@ var config = {
 var game = new Phaser.Game(config);
 let player;
 var cursors;
+var enemies;
 
 
 
@@ -30,6 +32,7 @@ function preload() {
   this.load.tilemapTiledJSON("map", "../assets/level1.json");
   this.load.image("background", "../assets/water.png");
   this.load.spritesheet("player", "../assets/player.png", { frameWidth: 32, frameHeight: 64 })
+  this.load.image("slime", "../assets/slime.png");
 }
 
 function create() {
@@ -49,10 +52,23 @@ function create() {
   worldLayer.setCollisionByProperty({ collides: true });
   highLayer.setDepth(10);
 
-  player = this.physics.add.sprite(100, 450, "player")
+  const spawnPoint = map.findObject(
+    'Player',
+    obj => obj.name === 'Spawn Point'
+  )
+
+  player = this.physics.add.sprite(spawnPoint.x, spawnPoint.y, "player");
   this.physics.add.collider(player, lowerLayer)
   this.physics.add.collider(player, groundLayer)
   this.physics.add.collider(player, worldLayer)
+
+  this.enemies = map.createFromObjects('Enemies', 'Enemy', {})
+  this.enemiesGroup = new Enemies(this.physics.world, this, [], this.enemies)
+  this.physics.add.collider(this.enemiesGroup, lowerLayer);
+  this.physics.add.collider(this.enemiesGroup, groundLayer);
+  this.physics.add.collider(this.enemiesGroup, worldLayer);
+
+  this.physics.add.collider(this.enemiesGroup, player, hitEnemy, null, this)
   
   const anims = this.anims;
   anims.create({
@@ -84,8 +100,6 @@ function create() {
   const camera = this.cameras.main
   camera.startFollow(player)
   camera.setBounds(0, 0, map.widthInPixels, map.heightInPixels)
-
-
 }
 
 
@@ -123,4 +137,8 @@ function update() {
       else if (prevVelocity.y > 0) player.setTexture('player', 'front')
   }
   
+}
+
+function hitEnemy(player, enemiesGroup) {
+  this.scene.restart()
 }
